@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script type="text/javascript" src="socket.io.js"></script>
+    <style>
+        html,body{
+            width:100%;
+            height:100%;
+            margin:0;
+            border:0;
+            overflow: hidden;
+        }
+        .title{
+            position:relative;
+            text-align:center;
+            background-color:green;
+            width:100%;
+            height:49px;
+            line-height:50px;
+            color:white;
+            font-weight: bold;
+        }
+        .padding{
+            display:block;
+            position:relative;
+            height:80%;
+            width:100%;
+            /* background-color:yellow; */
+            z-index:-1;
+        }
+        .room{
+            background-color:white;
+            border:1px solid #2DA7E0;
+            border-radius:5px;
+            width:80%;
+            
+            height:72%;
+            overflow-y:scroll;
+            overflow-x: hidden;
+            position: absolute;
+            left:0;top:0;right:0;bottom:0;
+            margin:auto;
+        }
+        
+        .input{
+            position:relative;
+            display: inline-block;
+            
+            top:30px;
+            text-align:center;
+            width:100%;
+            margin-bottom:20px;
+        }
+        .input>input,.input>button{
+            font-size:16px;
+            margin:10px;
+        }
+        .input>input{
+            width:60%;
+            border-color:#2DA7E0;
+            outline:none;
+            height:24px;
+            /* font-size:20px; */
+        }
+        input:focus{
+            border: 1px solid #2DA7E0;
+            border-color:#2DA7E0;
+        }
+        .room-message{
+            position:relative;
+            margin:10px 20px;
+            
+        }
+        
+        .message-item{
+            background-color:aquamarine;
+            /* margin:10px; */
+            text-align:center;
+            padding:5px 10px;
+            border-radius: 5px;
+        }
+        .message-left:before{
+            content:'';
+            position:absolute;
+            width:0;
+            height:0;
+            right:100%;
+            top:10px;
+            border-top:6px solid;
+            border-right:12px solid;
+            border-bottom:6px solid;
+            border-color:transparent aquamarine transparent;
+        }
+        .message-right{
+            right:0;
+        }
+        .message-right:before{
+            content:'';
+            position:absolute;
+            width:0;
+            height:0;
+            left:100%;
+            top:10px;
+            border-top:6px solid;
+            border-left:12px solid;
+            border-bottom:6px solid;
+            border-color:transparent aquamarine transparent;
+        }
+    </style>
+</head>
+<body>
+    <div class="title">
+        <span>websocket聊天室</span>
+        
+    </div>
+    <div class="room" id="room">
+        
+    </div>
+    <div class="padding"></div>
+    <div class="input">
+        <input id="message" type="text" placeholder="输入消息"/>
+        <!-- <button onclick="sendMessage()" id="send" >发送消息</button> -->
+    </div>
+    <script>
+        var socket = io('ws://localhost:8082')
+        var user = 'us'+Math.floor(Math.random()*100000);
+        var room = document.getElementById('room')
+        var message = document.getElementById('message')
+        
+        var send = document.getElementById('send')
+
+        message.addEventListener('keydown',function(e){
+            if(e.keyCode==13){
+                sendMessage()
+            }
+        })
+        function sendMessage(){
+            var msg = message.value;
+            if(msg){
+                message.value=''
+                socket.emit('sendmessage',{message:msg,username:user});
+            }
+        }
+        socket.on('receiveMessage',(data)=>{
+            showMessage(data)
+        })
+
+        function showMessage(data){
+            var html;
+            html= document.createElement('div')
+            html.setAttribute('class','room-message')
+            var div = document.createElement('div')
+            console.log(data.username)
+            if(data.username==user){
+                div.setAttribute('class','message-right message-item')
+            }else{
+                div.setAttribute('class','message-left message-item')
+            }
+            var text = document.createTextNode(data.message)
+            div.appendChild(text)
+            html.appendChild(div)
+            room.appendChild(html)
+            room.scrollTop = room.scrollHeight
+        }
+        //emit(eventName,参数1,参数2) //传给服务端eventName事件回调函数的参数
+    </script>
+</body>
+</html>
